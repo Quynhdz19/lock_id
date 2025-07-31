@@ -39,26 +39,41 @@ def encode_face_image(image_data: bytes) -> Optional[np.ndarray]:
         nparr = np.frombuffer(image_data, np.uint8)
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
+        if image is None:
+            print("❌ Error: Could not decode image")
+            return None
+        
+        print(f"✅ Image decoded successfully. Shape: {image.shape}")
+        
         # Convert BGR to RGB
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         # Find face locations
         face_locations = face_recognition.face_locations(rgb_image)
         
+        print(f"🔍 Found {len(face_locations)} face(s) in image")
+        
         if not face_locations:
+            print("❌ No faces detected in image")
             return None
         
         # Get face encodings
         face_encodings = face_recognition.face_encodings(rgb_image, face_locations)
         
         if not face_encodings:
+            print("❌ Could not encode faces")
             return None
+        
+        print(f"✅ Successfully encoded {len(face_encodings)} face(s)")
         
         # Return the first face encoding
         return face_encodings[0]
     
+    except ImportError as e:
+        print(f"❌ Error: face_recognition library not installed. Please run: pip install face-recognition")
+        return None
     except Exception as e:
-        print(f"Error encoding face: {e}")
+        print(f"❌ Error encoding face: {e}")
         return None
 
 def verify_face_encoding(known_encoding: np.ndarray, unknown_encoding: np.ndarray, tolerance: float = 0.6) -> bool:
@@ -264,9 +279,67 @@ async def face_recognition_status():
         "endpoints": {
             "register": "/register - Register user face",
             "verify": "/verify - Verify user face", 
-            "unlock": "/unlock-locker - Unlock locker with face"
+            "unlock": "/unlock-locker - Unlock locker with face",
+            "debug": "/debug-image - Debug image processing"
         }
     }
+
+@router.post("/debug-image")
+async def debug_image_processing(
+    file: UploadFile = File(..., description="Image file to debug")
+):
+    """Debug image processing without face recognition"""
+    
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    try:
+        # Read image data
+        image_data = await file.read()
+        
+        # Convert bytes to numpy array
+        nparr = np.frombuffer(image_data, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if image is None:
+            return {
+                "success": False,
+                "message": "Could not decode image",
+                "image_info": None
+            }
+        
+        # Save debug image
+        debug_filename = f"debug_image_{uuid.uuid4().hex}.jpg"
+        debug_filepath = os.path.join(FACE_IMAGES_DIR, debug_filename)
+        
+        with open(debug_filepath, "wb") as f:
+            f.write(image_data)
+        
+        # Convert BGR to RGB for face detection
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        # Try face detection
+        face_locations = face_recognition.face_locations(rgb_image)
+        
+        return {
+            "success": True,
+            "message": "Image processed successfully",
+            "image_info": {
+                "shape": image.shape,
+                "filename": debug_filename,
+                "file_size": len(image_data),
+                "content_type": file.content_type,
+                "faces_detected": len(face_locations),
+                "face_locations": face_locations
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Error processing image: {str(e)}",
+            "image_info": None
+        }
 
 @router.delete("/unregister")
 async def unregister_face(
