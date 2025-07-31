@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F5F5F5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bgGradient)" rx="200"/>
+  
+  <!-- Scanning frame corners -->
+  <g stroke="#FFFFFF" stroke-width="12" fill="none" opacity="0.8">
+    <!-- Top left corner -->
+    <line x1="150" y1="150" x2="250" y2="150"/>
+    <line x1="150" y1="150" x2="150" y2="250"/>
+    
+    <!-- Top right corner -->
+    <line x1="874" y1="150" x2="774" y2="150"/>
+    <line x1="874" y1="150" x2="874" y2="250"/>
+    
+    <!-- Bottom left corner -->
+    <line x1="150" y1="874" x2="250" y2="874"/>
+    <line x1="150" y1="874" x2="150" y2="774"/>
+    
+    <!-- Bottom right corner -->
+    <line x1="874" y1="874" x2="774" y2="874"/>
+    <line x1="874" y1="874" x2="874" y2="774"/>
+  </g>
+  
+  <!-- Main lock container -->
+  <g transform="translate(512, 512)">
+    <!-- Lock body shadow -->
+    <rect x="-180" y="-120" width="360" height="480" rx="40" fill="#000000" opacity="0.1" transform="translate(8, 8)"/>
+    
+    <!-- Lock body -->
+    <rect x="-180" y="-120" width="360" height="480" rx="40" fill="url(#lockGradient)" stroke="#E0E0E0" stroke-width="4"/>
+    
+    <!-- Lock shackle shadow -->
+    <path d="M -180 -120 Q -180 -180 0 -180 Q 180 -180 180 -120" stroke="#000000" stroke-width="20" fill="none" opacity="0.1" transform="translate(8, 8)"/>
+    
+    <!-- Lock shackle -->
+    <path d="M -180 -120 Q -180 -180 0 -180 Q 180 -180 180 -120" stroke="#FFFFFF" stroke-width="20" fill="none"/>
+    
+    <!-- Face outline inside lock -->
+    <g fill="none" stroke="#2196F3" stroke-width="8">
+      <!-- Face profile -->
+      <path d="M -80 -60 Q -80 -30 -50 -10 Q -20 10 20 10 Q 60 10 90 -10 Q 120 -30 120 -60 Q 120 -90 90 -110 Q 60 -130 20 -130 Q -20 -130 -50 -110 Q -80 -90 -80 -60"/>
+      
+      <!-- Eye -->
+      <ellipse cx="-30" cy="-40" rx="6" ry="4" fill="#2196F3"/>
+      
+      <!-- Nose -->
+      <path d="M 10 -50 Q 20 -45 20 -35"/>
+      
+      <!-- Mouth -->
+      <path d="M -40 -20 Q 0 -20 40 -20"/>
+    </g>
+    
+    <!-- Lock keyhole -->
+    <circle cx="0" cy="80" r="20" fill="#2196F3"/>
+    <rect x="-15" y="80" width="30" height="60" fill="#2196F3"/>
+    
+    <!-- Smart lock indicator -->
+    <circle cx="120" cy="-80" r="15" fill="#4CAF50"/>
+    <path d="M 110 -80 L 115 -85 L 125 -75" stroke="#FFFFFF" stroke-width="3" fill="none"/>
+  </g>
+  
+  <!-- App name -->
+  <text x="512" y="900" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#FFFFFF">Smart Locker</text>
+</svg> 
