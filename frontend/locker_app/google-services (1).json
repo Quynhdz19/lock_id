@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "150060772842",
+    "project_id": "lock-id-46378",
+    "storage_bucket": "lock-id-46378.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150060772842:android:cc58c69b2c7aa480cc5693",
+        "android_client_info": {
+          "package_name": "lock.id"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkU59PPGgUUqtxq0PA85Es6YPFplg-LCI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

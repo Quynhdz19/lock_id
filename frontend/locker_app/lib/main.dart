@@ -5,9 +5,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
   runApp(MyLockerApp());
 }
 
@@ -47,7 +53,10 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
   final String myLockerId = "12"; // ID tủ trong database
   
   // API Configuration
-  final String baseUrl = "http://localhost:8000/api/face"; // Update to your backend URL
+  final String baseUrl = "http://192.168.1.11:8000/api/face"; // Update to your backend URL
+  
+  // Firebase Database reference
+  late DatabaseReference _lockerRef;
 
   @override
   void initState() {
@@ -56,6 +65,13 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
       duration: Duration(seconds: 2),
       vsync: this,
     )..repeat();
+    
+    // Initialize Firebase Database reference
+    _lockerRef = FirebaseDatabase.instance.ref().child('lockers').child(myLockerId);
+    
+    // Start listening to locker state changes
+    _listenToLockerState();
+    
     _requestCameraPermission();
   }
 
@@ -279,9 +295,8 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
       print('🔍 Face verification response: $jsonResponse');
 
       if (response.statusCode == 200 && jsonResponse['success']) {
-        print('✅ FACE MATCH DETECTED - Locker unlocked successfully!');
-        _showMessage('🔓 Locker unlocked successfully!', isError: false);
-        // Có thể thêm âm thanh hoặc vibration ở đây
+        // Unlock function with Firebase Realtime Database
+        await _unlockLocker();
       } else {
         print('❌ Face verification failed: ${jsonResponse['message']}');
         _showMessage('❌ Face verification failed', isError: true);
@@ -294,6 +309,61 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
         _isUnlocking = false;
       });
     }
+  }
+
+  // Firebase Realtime Database unlock function
+  Future<void> _unlockLocker() async {
+    try {
+      // Update the state field to 'unlocked' in Firebase
+      await _lockerRef.update({
+        'state': 'unlocked',
+        'lastUnlockTime': DateTime.now().toIso8601String(),
+        'status': 'active',
+        'lockerNumber': myLockerNumber,
+      });
+      
+      print('✅ FACE MATCH DETECTED - Locker unlocked successfully!');
+      print('✅ Firebase updated: Locker $myLockerId state changed to unlocked');
+      _showMessage('🔓 Locker unlocked successfully!', isError: false);
+      
+      // Optional: Add sound or vibration here
+      // You can add HapticFeedback.mediumImpact() for vibration
+      
+    } catch (e) {
+      print('❌ Error updating Firebase: $e');
+      _showMessage('🔓 Locker unlocked but failed to update database', isError: false);
+    }
+  }
+
+  // Function to read current locker state from Firebase
+  Future<Map<String, dynamic>?> _getLockerState() async {
+    try {
+      final snapshot = await _lockerRef.get();
+      if (snapshot.exists) {
+        return Map<String, dynamic>.from(snapshot.value as Map);
+      }
+      return null;
+    } catch (e) {
+      print('❌ Error reading locker state: $e');
+      return null;
+    }
+  }
+
+  // Function to listen to locker state changes
+  void _listenToLockerState() {
+    _lockerRef.onValue.listen((event) {
+      if (event.snapshot.exists) {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+        print('📡 Locker state changed: ${data['state']}');
+        
+        // You can add UI updates here based on state changes
+        if (data['state'] == 'locked') {
+          print('🔒 Locker is now locked');
+        } else if (data['state'] == 'unlocked') {
+          print('🔓 Locker is now unlocked');
+        }
+      }
+    });
   }
 
   // New method to register face
