@@ -74,7 +74,10 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
     )..repeat();
     
     // Initialize Firebase Database references
-    _database = FirebaseDatabase.instanceFor(databaseURL: _databaseUrl);
+    _database = FirebaseDatabase.instanceFor(
+      app: Firebase.app(),
+      databaseURL: _databaseUrl,
+    );
     _lockerRef = _database.ref().child('lockers').child(myLockerId);
     // Root-level state key that your hardware/UI might be observing
     _rootStateRef = _database.ref().child('state');
