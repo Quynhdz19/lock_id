@@ -13,6 +13,8 @@ void main() async {
   
   // Initialize Firebase
   await Firebase.initializeApp();
+  // Enable verbose logging for Realtime Database troubleshooting
+  FirebaseDatabase.instance.setLoggingEnabled(true);
   
   runApp(MyLockerApp());
 }
@@ -55,8 +57,13 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
   // API Configuration
   final String baseUrl = "http://192.168.1.11:8000/api/face"; // Update to your backend URL
   
-  // Firebase Database reference
+  // Firebase Database
+  // Use explicit databaseURL to ensure we write to the correct instance/region
+  static const String _databaseUrl =
+      'https://lock-id-46378-default-rtdb.asia-southeast1.firebasedatabase.app';
+  late FirebaseDatabase _database;
   late DatabaseReference _lockerRef;
+  late DatabaseReference _rootStateRef;
 
   @override
   void initState() {
@@ -66,8 +73,11 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
       vsync: this,
     )..repeat();
     
-    // Initialize Firebase Database reference
-    _lockerRef = FirebaseDatabase.instance.ref().child('lockers').child(myLockerId);
+    // Initialize Firebase Database references
+    _database = FirebaseDatabase.instanceFor(databaseURL: _databaseUrl);
+    _lockerRef = _database.ref().child('lockers').child(myLockerId);
+    // Root-level state key that your hardware/UI might be observing
+    _rootStateRef = _database.ref().child('state');
     
     // Start listening to locker state changes
     _listenToLockerState();
@@ -321,6 +331,8 @@ class _LockerPageState extends State<LockerPage> with TickerProviderStateMixin {
         'status': 'active',
         'lockerNumber': myLockerNumber,
       });
+      // Also mirror the state at the root key if external systems read it there
+      await _rootStateRef.set('unlocked');
       
       print('✅ FACE MATCH DETECTED - Locker unlocked successfully!');
       print('✅ Firebase updated: Locker $myLockerId state changed to unlocked');
